@@ -1,55 +1,60 @@
 import { eq } from 'drizzle-orm';
-import { db, pool } from './db.js';
-import { demoUsers } from './schema.js';
+import { db, pool } from './db/db.js';
+import { matches } from './db/schema.js';
 
 async function main() {
-  try {
-    console.log('Performing CRUD operations...');
+	try {
+		console.log('Performing CRUD operations...');
 
-    // CREATE: Insert a new user
-    const [newUser] = await db
-      .insert(demoUsers)
-      .values({ name: 'Admin User', email: 'admin@example.com' })
-      .returning();
+		// CREATE: Insert a new match
+		const [newMatch] = await db
+			.insert(matches)
+			.values({
+				sport: 'cricket',
+				homeTeam: 'India',
+				awayTeam: 'Australia',
+				status: 'scheduled',
+			})
+			.returning();
 
-    if (!newUser) {
-      throw new Error('Failed to create user');
-    }
+		if (!newMatch) {
+			throw new Error('Failed to create match');
+		}
 
-    console.log('✅ CREATE: New user created:', newUser);
+		console.log('✅ CREATE: New match created:', newMatch);
 
-    // READ: Select the user
-    const foundUser = await db.select().from(demoUsers).where(eq(demoUsers.id, newUser.id));
-    console.log('✅ READ: Found user:', foundUser[0]);
+		// READ: Select the match
+		const foundMatch = await db.select().from(matches).where(eq(matches.id, newMatch.id));
+		console.log('✅ READ: Found match:', foundMatch[0]);
 
-    // UPDATE: Change the user's name
-    const [updatedUser] = await db
-      .update(demoUsers)
-      .set({ name: 'Super Admin' })
-      .where(eq(demoUsers.id, newUser.id))
-      .returning();
+		// UPDATE: Change the match status and score
+		const [updatedMatch] = await db
+			.update(matches)
+			.set({ status: 'live', homeScore: 1 })
+			.where(eq(matches.id, newMatch.id))
+			.returning();
 
-    if (!updatedUser) {
-      throw new Error('Failed to update user');
-    }
+		if (!updatedMatch) {
+			throw new Error('Failed to update match');
+		}
 
-    console.log('✅ UPDATE: User updated:', updatedUser);
+		console.log('✅ UPDATE: Match updated:', updatedMatch);
 
-    // DELETE: Remove the user
-    await db.delete(demoUsers).where(eq(demoUsers.id, newUser.id));
-    console.log('✅ DELETE: User deleted.');
+		// DELETE: Remove the match
+		await db.delete(matches).where(eq(matches.id, newMatch.id));
+		console.log('✅ DELETE: Match deleted.');
 
-    console.log('\nCRUD operations completed successfully.');
-  } catch (error) {
-    console.error('❌ Error performing CRUD operations:', error);
-    process.exit(1);
-  } finally {
-    // Close the pool to end the WebSocket connection
-    if (pool) {
-      await pool.end();
-      console.log('Database pool closed.');
-    }
-  }
+		console.log('\nCRUD operations completed successfully.');
+	} catch (error) {
+		console.error('❌ Error performing CRUD operations:', error);
+		process.exit(1);
+	} finally {
+		// Close the pool to end the WebSocket connection
+		if (pool) {
+			await pool.end();
+			console.log('Database pool closed.');
+		}
+	}
 }
 
 main();
