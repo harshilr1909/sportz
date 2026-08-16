@@ -1,4 +1,5 @@
 import express from "express";
+import { matchRouter } from "./src/routes/matchRouter";
 const app = express();
 const port = 8080;
 
@@ -6,9 +7,11 @@ const port = 8080;
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Hello from Express server!");
+	res.send("Hello from Express server!");
 });
 
+app.use('/matchRoute', matchRouter);
+
 app.listen(port, () => {
-  console.log(`Server listening through port: ${port}`);
+	console.log(`Server listening through port: ${port}`);
 });
